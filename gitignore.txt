@@ -1,1 +1,1 @@
-﻿input/*.csv
+﻿/input/*.csv
