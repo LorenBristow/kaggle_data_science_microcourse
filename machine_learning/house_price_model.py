@@ -33,8 +33,10 @@ print('What are the datatypes by column?\n')
 print('MELBOURNE column names & datatypes:\n', melb_dataframe.dtypes, '\n\n')
 print('IOWA column names & datatypes:\n', iowa_dataframe.dtypes, '\n\n')
 print('Which columns, if any, have missing values?\n')
-print('MELBOURNE list of columns with missing values:\n', melb_dataframe.columns[melb_dataframe.isnull().any()])
-print('IOWA list of columns with missing values:\n', iowa_dataframe.columns[iowa_dataframe.isnull().any()])
+print('MELBOURNE: ist of columns with missing values:\n', melb_dataframe.columns[melb_dataframe.isnull().any()], '\n\n')
+print('IOWA list of columns with missing values:\n', iowa_dataframe.columns[iowa_dataframe.isnull().any()], '\n\n')
+
+
 
 # dropna drops missing values (think of na as "not available")
 #melbourne_data = melbourne_data.dropna(axis=0)
