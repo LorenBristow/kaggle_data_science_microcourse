@@ -4,10 +4,6 @@ Created on Wed Mar  6 13:26:55 2019
 
 @author: loren
 """
-#NOTES#
-#The model will train and be validated based on data relating to the Melbourne housing market. 
-#The model will then be applied to data relating to the Iowa housing market to make predictions for competition entry.
-#I use printing to the console for inspection of results at regular points. 
 
 import pandas as pd
 from sklearn.tree import DecisionTreeRegressor
@@ -64,7 +60,7 @@ iowa_features = ['LotArea', 'YearBuilt', '1stFlrSF', '2ndFlrSF', 'FullBath', 'Be
 X = iowa_dataframe[iowa_features]   
 print('Features of first 5 houses in the Iowa dataset:\n', X.head(), '\n') 
 
-##STEP 6 - DEFINE/SPECIFY & FIT THE MODEL#
+#STEP 6 - DEFINE/SPECIFY & FIT THE MODEL#
 
 #Using the scikit-learn library.
 #Specify the model - The first version of the model is a decision tree model. 
@@ -73,7 +69,9 @@ iowa_house_price_model = DecisionTreeRegressor(random_state=1) #random state is 
 iowa_house_price_model.fit(X, y)
 print('Model type and specifications:\n', iowa_house_price_model,'\n\n')
 
-##STEP 7 - MAKE PREDICTIONS#
+#STEP 7 - MAKE PREDICTIONS#
 
 print('Predictions for the first 5 houses in the IOWA dataset are:\nFeatures of the houses:\n',X.head(), '\n',\
       'Predicted prices of the houses:\n', iowa_house_price_model.predict(X.head()))
+
+#STEP 7 - MODEL VALIDATION#
