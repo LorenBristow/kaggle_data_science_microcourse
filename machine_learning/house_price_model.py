@@ -65,11 +65,11 @@ print('MELBOURNE features (X) summary:\n\n', X.describe(),'\n\n')
 
 #Using the scikit-learn library.
 #Define - The first version of the model is a decision tree model. 
-house_price_model = DecisionTreeRegressor(random_state = 1) #random state is specified to ensure the same results with each run ie. randomness is taken out. The number chose doesn't materially impact quality.
-#Fit
-house_price_model.fit(X,y)
-print('Model type and specifications:\n', house_price_model,'\n\n')
+melb_house_price_model = DecisionTreeRegressor(random_state = 1) #random state is specified to ensure the same results with each run ie. randomness is taken out. The number chose doesn't materially impact quality.
+#Fit 
+melb_house_price_model.fit(X,y)
+print('Model type and specifications:\n', melb_house_price_model,'\n\n')
 
 #STEP 7 - MAKE PREDICTIONS#
 print('Predictions for the first 5 houses in the MELBOURNE dataset are:\nFeatures of the houses:\n',X.head(), '\n',\
-      'Pedicted prices of the houses:\n', house_price_model.predict(X.head()))
+      'Pedicted prices of the houses:\n', melb_house_price_model.predict(X.head()))
