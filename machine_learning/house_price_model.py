@@ -9,6 +9,7 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.metrics import mean_absolute_error
+from sklearn.ensemble import RandomForestRegressor
 
 #STEP 1 - READ IN DATA#
 
@@ -69,7 +70,8 @@ print('Predictions for the first 5 houses in the IOWA dataset are:\nFeatures of 
 
 #'Mean absolute error' (MAE) is used as a single metric by which to assess predictove accuracy ie. model quality. 
 #The prediction error per house: error = actual price - predicted price. Take the mean of these as absolute values to get MAE. Smaller MAE is better MAE!
-print('The mean absolute error (MAE) of predictions by this model\n(with default decision tree specifications and run on validation data only):\n', round(mean_absolute_error(validation_y,predicted_house_prices),3), '\n')
+mae_decision_tree_default = mean_absolute_error(validation_y,predicted_house_prices)
+print('The mean absolute error (MAE) of predictions by this model\n(with default decision tree specifications and run on validation data only):\n', round(mae_decision_tree_default), '\n')
 
 #To improve prediction accuracy, the depth of the decision tree can be adjusted using the 'max_leaf_nodes argument'. 
 #More leaves tends towards overfitting, fewer leaves towards underfitting.
@@ -91,7 +93,7 @@ for max_leaf_nodes in max_leaves_for_consideration:
     mae_for_comparison_list.append(mae_for_comparison)
     if mae_for_comparison == min(mae_for_comparison_list):
         optimal_max_leaf_nodes = max_leaf_nodes
-print('Therefore, optimal number of leaf nodes is {} resulting in a MAE of {}.\n'.format(optimal_max_leaf_nodes, round(mae_for_comparison),3))  
+print('Therefore, optimal number of leaf nodes is {} resulting in a MAE of {}. This is a {}% improvement over the MAE without adjusting the number of leaf nodes.\n'.format(optimal_max_leaf_nodes, round(mae_for_comparison),round((1-mae_for_comparison/mae_decision_tree_default)*100)))  
 
 #Can we find a more optimal number of leaf nodes around the currently identified optimal number of leaf nodes?
 range_bottom = int(optimal_max_leaf_nodes * 0.9)
@@ -100,12 +102,23 @@ mae_for_comparison_from_refined_leaves_number_list = []
 print('Testing of numbers of leaf nodes around initially identified optimal number of leaf nodes results in the following:\n')
 for max_leaf_nodes in range(range_bottom, range_top):
     mae_for_comparison_from_refined_leaves_number = specify_fit_predict_validate(max_leaf_nodes, train_X, validation_X, train_y, validation_y)
-    print('leaf nodes: {},    mae: {}'.format(max_leaf_nodes, round(mae_for_comparison_from_refined_leaves_number),3), '\n')
+    print('leaf nodes: {},    mae: {}'.format(max_leaf_nodes, round(mae_for_comparison_from_refined_leaves_number)), '\n')
     mae_for_comparison_from_refined_leaves_number_list.append(mae_for_comparison_from_refined_leaves_number)
     if mae_for_comparison_from_refined_leaves_number == min(mae_for_comparison_from_refined_leaves_number_list):
         refined_optimal_max_leaf_nodes = max_leaf_nodes
-print('Therefore, optimal number of leaf nodes after further testing is {} resulting in a MAE of {}.\n'.format(refined_optimal_max_leaf_nodes, round(mae_for_comparison_from_refined_leaves_number),3))        
-    
+print('Therefore, optimal number of leaf nodes after further testing is {} resulting in a MAE of {}. This is a further {}% improvement over the MAE with the initial adjustment to the number of leaf nodes\n'.format(refined_optimal_max_leaf_nodes, round(min(mae_for_comparison_from_refined_leaves_number_list)), round((1-mae_for_comparison_from_refined_leaves_number/mae_for_comparison)*100)))        
+
+#Will a different model perform better? Trying a random forest model.
+#specify:
+iowa_house_price_model_random_forest = RandomForestRegressor(random_state=1) #random forest performs quite well without tuning of paramaters. 
+#fit
+iowa_house_price_model_random_forest.fit(train_X, train_y)
+#predict
+predicted_house_prices_random_forest = iowa_house_price_model_random_forest.predict(validation_X)
+#validate
+mae_random_forest = mean_absolute_error(validation_y, predicted_house_prices_random_forest)   
+print('Using a random forest model the MAE is {}. This is a {}% improvement over the MAE with more refined number of leaf nodes.\n\n'.format(round(mae_random_forest), round((1-mae_random_forest/mae_for_comparison_from_refined_leaves_number)*100)))
+ 
 #STEP 8 - RE-SPECIFY AND FIT THE MODEL WITH IMPROVEMENTS BASED ON VALIDATION EXERCISE#
 
 #Fit on all data (not just training data) to improve accuracy.
