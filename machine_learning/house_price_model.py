@@ -106,4 +106,15 @@ for max_leaf_nodes in range(range_bottom, range_top):
         refined_optimal_max_leaf_nodes = max_leaf_nodes
 print('Therefore, optimal number of leaf nodes after further testing is {} resulting in a MAE of {}.\n'.format(refined_optimal_max_leaf_nodes, round(mae_for_comparison_from_refined_leaves_number),3))        
     
+#STEP 8 - RE-SPECIFY AND FIT THE MODEL WITH IMPROVEMENTS BASED ON VALIDATION EXERCISE#
+
+#Fit on all data (not just training data) to improve accuracy.
+final_house_price_model = DecisionTreeRegressor(max_leaf_nodes=refined_optimal_max_leaf_nodes, random_state=1)
+final_house_price_model.fit(X, y)
+
+
+
+
+
+
 
