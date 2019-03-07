@@ -52,24 +52,36 @@ melb_dataframe_missing_values_dropped = melb_dataframe.dropna(axis=0) #(axis=0) 
 
 #STEP 5 - SELECT PREDICTION TARGET (y) AND FEATURES (X)#
 
-#define the prediction target - we want to predict house prices so the prediction target is the 'Price' variable in the Melbourne data.
-y = melb_dataframe_missing_values_dropped.Price # dot notation is used to pull out the variable by the column name. Price is now a series, effectively a single column DataFrame.
-print(y.head(), '\n') #to see the first few rows of 'y' for inspection.
+    #define the prediction target - we want to predict house prices so the prediction target is the 'Price' variable in the Melbourne data.
+    #y = melb_dataframe_missing_values_dropped.Price # dot notation is used to pull out the variable by the column name. Price is now a series, effectively a single column DataFrame.
+    #print(y.head(), '\n') #to see the first few rows of 'y' for inspection.
 
-#list the features - the list of columns used as input to make predictions. By convention assigned to 'X'.
-melb_features = ['Rooms', 'Bathroom', 'Landsize', 'Lattitude', 'Longtitude'] #first version some of only the numeric variables as features.
-X = melb_dataframe_missing_values_dropped[melb_features]
-print('MELBOURNE features (X) summary:\n\n', X.describe(),'\n\n')
+#Define the prediction target 
+#We first inspect columns to identify the name of the price column in the dataset.
+print(iowa_dataframe.columns,'\n') #.columns presents the columns headers as an index. 
+#The price column in this dataset is called 'SalePrice'.
+y = iowa_dataframe.SalePrice 
+print('Prices of first 5 houses in Iowa dataset:\n', y.head(), '\n')
 
-#STEP 6 - DEFINE & FIT THE MODEL#
-
-#Using the scikit-learn library.
-#Define - The first version of the model is a decision tree model. 
-melb_house_price_model = DecisionTreeRegressor(random_state = 1) #random state is specified to ensure the same results with each run ie. randomness is taken out. The number chose doesn't materially impact quality.
-#Fit 
-melb_house_price_model.fit(X,y)
-print('Model type and specifications:\n', melb_house_price_model,'\n\n')
-
-#STEP 7 - MAKE PREDICTIONS#
-print('Predictions for the first 5 houses in the MELBOURNE dataset are:\nFeatures of the houses:\n',X.head(), '\n',\
-      'Pedicted prices of the houses:\n', melb_house_price_model.predict(X.head()))
+    ##list the features - the list of columns used as input to make predictions. By convention assigned to 'X'.
+    #melb_features = ['Rooms', 'Bathroom', 'Landsize', 'Lattitude', 'Longtitude'] #first version some of only the numeric variables as features.
+    #X = melb_dataframe_missing_values_dropped[melb_features]
+    #print('MELBOURNE features (X) summary:\n\n', X.describe(),'\n\n')
+    
+#List the features by column name and then assign the features data to 'X'.
+iowa_features = ['LotArea', 'YearBuilt', '1stFlrSF', '2ndFlrSF', 'FullBath', 'BedroomAbvGr', 'TotRmsAbvGrd']
+X = iowa_dataframe[iowa_features]   
+print('Features of first 5 houses in the Iowa dataset:\n', X.head(), '\n') 
+#
+##STEP 6 - DEFINE & FIT THE MODEL#
+#
+##Using the scikit-learn library.
+##Define - The first version of the model is a decision tree model. 
+#melb_house_price_model = DecisionTreeRegressor(random_state = 1) #random state is specified to ensure the same results with each run ie. randomness is taken out. The number chose doesn't materially impact quality.
+##Fit 
+#melb_house_price_model.fit(X,y)
+#print('Model type and specifications:\n', melb_house_price_model,'\n\n')
+#
+##STEP 7 - MAKE PREDICTIONS#
+#print('Predictions for the first 5 houses in the MELBOURNE dataset are:\nFeatures of the houses:\n',X.head(), '\n',\
+#      'Pedicted prices of the houses:\n', melb_house_price_model.predict(X.head()))
