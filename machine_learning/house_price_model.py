@@ -121,12 +121,27 @@ print('Using a random forest model the MAE is {}. This is a {}% improvement over
  
 #STEP 8 - RE-SPECIFY AND FIT THE MODEL WITH IMPROVEMENTS BASED ON VALIDATION EXERCISE#
 
+#Random forest has performed best on training data so will be used for the final model. 
+final_house_price_model_on_full_data = RandomForestRegressor(random_state=1)
 #Fit on all data (not just training data) to improve accuracy.
-final_house_price_model = DecisionTreeRegressor(max_leaf_nodes=refined_optimal_max_leaf_nodes, random_state=1)
-final_house_price_model.fit(X, y)
+final_house_price_model_on_full_data.fit(X, y)
 
+#STEP 9 - PREDICT ON NEW DATA#
 
+#Read in test data using pandas.
+test_data_path = 'input/test.csv'
+test_data = pd.read_csv(test_data_path)
+#define features that will be the input. 
+test_X = test_data[iowa_features]
+#predict.
+test_predictions = final_house_price_model_on_full_data.predict(test_X)
 
+#________________________________________________________________________________________
+#FOR THE KAGGLE COMPETITION#
+# The lines below show how to save predictions in format used for competition scoring.
+output = pd.DataFrame({'Id': test_data.Id,
+                       'SalePrice': test_predictions})
+output.to_csv('submission.csv', index=False)
 
 
 
