@@ -48,7 +48,7 @@ X = iowa_dataframe_missing_values_dropped[iowa_features]
 print('Features of first 5 houses in the Iowa dataset:\n', X.head(), '\n') 
 
 #Split data into separate training and validation datasets for features and for prediction target. 
-train_X, validation_X, train_y, validation_y = train_test_split(X, y, random_state = 0) #the split is random so setting random state ensure the same split for every run. 
+train_X, validation_X, train_y, validation_y = train_test_split(X, y, random_state = 1) #the split is random so setting random state ensure the same split for every run. 
 
 #STEP 5 - DEFINE/SPECIFY & FIT THE MODEL#
 
@@ -69,9 +69,14 @@ print('Predictions for the first 5 houses in the IOWA dataset are:\nFeatures of 
 
 #'Mean absolute error' (MAE) is used as a single metric by which to assess predictove accuracy ie. model quality. 
 #The prediction error per house: error = actual price - predicted price. Take the mean of these as absolute values to get MAE. Smaller MAE is better MAE!
-print('The mean absolute error (MAE) of the model is:\n', round(mean_absolute_error(validation_y,predicted_house_prices),3))
+print('The mean absolute error (MAE) of predictions by this model\n(with default decision tree specifications and run on validation data only):\n', round(mean_absolute_error(validation_y,predicted_house_prices),3))
 
-
-
-
+#To improve prediction accuracy, the depth of the decision tree can be adjusted using the 'max_leaf_nodes argument'. 
+#More leaves tends towards overfitting, fewer leaves towards underfitting.
+#A function to specify, fit and rerun the model and output MAE given different tree depths:
+def specify_fit_predict_validate(max_leaves, train_X, validation_X, train_y, validation_y):
+        iowa_house_price_model_adjusting_max_leaves = DecisionTreeRegressor(max_leaf_nodes=max_leaves, random_state=1)
+        iowa_house_price_model_adjusting_max_leaves.fit(train_X, train_y)
+        predicted_house_prices_adjusting_max_leaves = iowa_house_price_model_adjusting_max_leaves.predict(validation_X)
+        mae = mean_absolute_error(validation_y, predicted_house_prices_adjusting_max_leaves)
 
