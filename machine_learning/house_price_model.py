@@ -6,7 +6,7 @@ Created on Wed Mar  6 13:26:55 2019
 """
 #NOTES#
 #The model will train and be validated based on data relating to the Melbourne housing market. 
-#The model will then be applied to data relating to the Iowa housing market ('test.csv') to make predictions for competition entry.
+#The model will then be applied to data relating to the Iowa housing market to make predictions for competition entry.
 #I use printing to the console for inspection of results at regular points. 
 
 import pandas as pd
@@ -19,7 +19,7 @@ melb_dataframe = pd.read_csv(melb_data_file_path)
 
 #STEP 2 - READ IN THE TEST DATA - IOWA DATA#
 
-iowa_data_file_path = 'input/test.csv'
+iowa_data_file_path = 'input/train.csv'
 iowa_dataframe = pd.read_csv(iowa_data_file_path) 
 
 #STEP 3 - INSPECT THE DATASETS#
@@ -71,4 +71,5 @@ house_price_model.fit(X,y)
 print('Model type and specifications:\n', house_price_model,'\n\n')
 
 #STEP 7 - MAKE PREDICTIONS#
-print('Predictions for the first 5 houses in the MELBOURNE dataset are:\nFeatures of the houses:\n',X.head(), '\n', 'Pedicted prices of the houses:\n', house_price_model.predict(X.head()))
+print('Predictions for the first 5 houses in the MELBOURNE dataset are:\nFeatures of the houses:\n',X.head(), '\n',\
+      'Pedicted prices of the houses:\n', house_price_model.predict(X.head()))
