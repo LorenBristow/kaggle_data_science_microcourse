@@ -65,18 +65,45 @@ predicted_house_prices = iowa_house_price_model.predict(validation_X)
 print('Predictions for the first 5 houses in the IOWA dataset are:\nFeatures of the houses:\n',validation_X.head(), '\n',\
       'Predicted prices of the houses:\n', iowa_house_price_model.predict(validation_X.head()),'\n\n') #need to understand why I can't use .head with the variable 'predicted_house_prices'.
 
-#STEP 7 - MODEL VALIDATION#
+#STEP 7 - MODEL VALIDATION (& IMPROVEMENTS & VALIDATION &...)#
 
 #'Mean absolute error' (MAE) is used as a single metric by which to assess predictove accuracy ie. model quality. 
 #The prediction error per house: error = actual price - predicted price. Take the mean of these as absolute values to get MAE. Smaller MAE is better MAE!
-print('The mean absolute error (MAE) of predictions by this model\n(with default decision tree specifications and run on validation data only):\n', round(mean_absolute_error(validation_y,predicted_house_prices),3))
+print('The mean absolute error (MAE) of predictions by this model\n(with default decision tree specifications and run on validation data only):\n', round(mean_absolute_error(validation_y,predicted_house_prices),3), '\n')
 
 #To improve prediction accuracy, the depth of the decision tree can be adjusted using the 'max_leaf_nodes argument'. 
 #More leaves tends towards overfitting, fewer leaves towards underfitting.
 #A function to specify, fit and rerun the model and output MAE given different tree depths:
-def specify_fit_predict_validate(max_leaves, train_X, validation_X, train_y, validation_y):
-        iowa_house_price_model_adjusting_max_leaves = DecisionTreeRegressor(max_leaf_nodes=max_leaves, random_state=1)
+def specify_fit_predict_validate(max_leaf_nodes, train_X, validation_X, train_y, validation_y):
+        iowa_house_price_model_adjusting_max_leaves = DecisionTreeRegressor(max_leaf_nodes=max_leaf_nodes, random_state=1)
         iowa_house_price_model_adjusting_max_leaves.fit(train_X, train_y)
         predicted_house_prices_adjusting_max_leaves = iowa_house_price_model_adjusting_max_leaves.predict(validation_X)
         mae = mean_absolute_error(validation_y, predicted_house_prices_adjusting_max_leaves)
+        return(mae)
+
+#A for loop to test various decision tree depths(max_leaf_nodes) and return optimal number of nodes:
+max_leaves_for_consideration = [5, 25, 50, 100, 250, 500]
+mae_for_comparison_list = []
+print('Initial testing of different numbers of leaf nodes results in the following:\n')
+for max_leaf_nodes in max_leaves_for_consideration:
+    mae_for_comparison = specify_fit_predict_validate(max_leaf_nodes, train_X, validation_X, train_y, validation_y)
+    print('leaf nodes: {},    mae: {}'.format(max_leaf_nodes, round(mae_for_comparison),3), '\n')
+    mae_for_comparison_list.append(mae_for_comparison)
+    if mae_for_comparison == min(mae_for_comparison_list):
+        optimal_max_leaf_nodes = max_leaf_nodes
+print('Therefore, optimal number of leaf nodes is {} resulting in a MAE of {}.\n'.format(optimal_max_leaf_nodes, round(mae_for_comparison),3))  
+
+#Can we find a more optimal number of leaf nodes around the currently identified optimal number of leaf nodes?
+range_bottom = int(optimal_max_leaf_nodes * 0.9)
+range_top = int(optimal_max_leaf_nodes * 1.1) #must be int to be used in the rnage function. 
+mae_for_comparison_from_refined_leaves_number_list = []
+print('Testing of numbers of leaf nodes around initially identified optimal number of leaf nodes results in the following:\n')
+for max_leaf_nodes in range(range_bottom, range_top):
+    mae_for_comparison_from_refined_leaves_number = specify_fit_predict_validate(max_leaf_nodes, train_X, validation_X, train_y, validation_y)
+    print('leaf nodes: {},    mae: {}'.format(max_leaf_nodes, round(mae_for_comparison_from_refined_leaves_number),3), '\n')
+    mae_for_comparison_from_refined_leaves_number_list.append(mae_for_comparison_from_refined_leaves_number)
+    if mae_for_comparison_from_refined_leaves_number == min(mae_for_comparison_from_refined_leaves_number_list):
+        refined_optimal_max_leaf_nodes = max_leaf_nodes
+print('Therefore, optimal number of leaf nodes after further testing is {} resulting in a MAE of {}.\n'.format(refined_optimal_max_leaf_nodes, round(mae_for_comparison_from_refined_leaves_number),3))        
+    
 
