@@ -12,6 +12,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.metrics import mean_absolute_error
 from sklearn.ensemble import RandomForestRegressor
+from sklearn.preprocessing import Imputer
 
 #STEP 1 - READ IN DATA#
 
@@ -35,7 +36,6 @@ print('IOWA list of columns with missing values:\n', iowa_dataframe.columns[iowa
 
 #For the first version of this beginner ML model columns with missing values are simply dropped.
 iowa_dataframe_missing_values_dropped = iowa_dataframe.dropna(axis=1) #(axis=1) is indicating that columns should be dropped rather than rows (axis=0)
-
 #STEP 4 - SELECT PREDICTION TARGET (y) AND FEATURES (X), AND SPLIT DATA INTO TRAIN AND VALIDATION PORTIONS#
 
 #Define the prediction target 
@@ -121,23 +121,60 @@ predicted_house_prices_random_forest = iowa_house_price_model_random_forest.pred
 mae_random_forest = mean_absolute_error(validation_y, predicted_house_prices_random_forest)   
 print('Using a random forest model the MAE is {}. This is a {}% improvement over the MAE with more refined number of leaf nodes.\n\n'.format(round(mae_random_forest), round((1-mae_random_forest/mae_for_comparison_from_refined_leaves_number)*100)))
 
-#What is the optimal way to handle missing values? Compare dropping columns, imputation and imputation with extension. 
+#What is the optimal way to handle missing values? Compare dropping columns, imputation and imputation with extension.
 #Return to original data (above has already gone the dropped columns route so we need to take a step back for testing other methods.)
+print(iowa_dataframe.shape)
+print(type(iowa_dataframe))
 iowa_prediction_data = iowa_dataframe.drop(['SalePrice'], axis=1) #removes target from data.
+print(iowa_prediction_data.shape)
+print(type(iowa_prediction_data))
 #Exclude non-numeric columns for now.
 iowa_prediction_data_only_numeric = iowa_prediction_data.select_dtypes(exclude=['object']) #removes non-numeric columns.
+print(iowa_prediction_data_only_numeric.shape)
+print('SSS', type(iowa_prediction_data_only_numeric))
 #Respecify X_mvh
-X_mvh = iowa_prediction_data_only_numeric[iowa_features]
+X_mvh = iowa_prediction_data_only_numeric
+print(X_mvh)
+print(type(X_mvh))
 #Split data into training and validation. 'mvh' stands for missing value handling. 
 train_X_mvh, validation_X_mvh, train_y_mvh, validation_y_mvh = train_test_split(X_mvh, y, random_state=1)
+print(train_X_mvh.describe())
+print(type(train_X_mvh))
+print(type(validation_X_mvh))
+print(type(train_y_mvh))
+print(type(validation_y_mvh))
+#Which, if any, are the columns with missing values?
+mvh_cols_missing_values = [col for col in train_X_mvh if train_X_mvh[col].isnull().any()]
+print('Columns with missing values: \n', mvh_cols_missing_values)
 #Define a function to compare the performance.
 def score_methods_for_missing_value_handling(train_X_mvh, validation_X_mvh, train_y_mvh, validation_y_mvh):
     model = RandomForestRegressor(random_state=1)
     model.fit(train_X_mvh, train_y_mvh)
     preds = model.predict(validation_X_mvh)
-    return mean_absolute_error(y_test, validation_y_mvh)
+    return mean_absolute_error(validation_y_mvh, preds)
 #Compare
-
+#Approach 1 - drop columns with missing values
+reduced_train_X_mvh = train_X_mvh.drop(mvh_cols_missing_values, axis=1)
+reduced_validation_X_mvh = validation_X_mvh.drop(mvh_cols_missing_values, axis=1)
+print('Approach 1 - MAE with dropping columns with missing values: ')
+print(score_methods_for_missing_value_handling(reduced_train_X_mvh, reduced_validation_X_mvh, train_y_mvh, validation_y_mvh))
+#Approach 2 - imputation
+hmv_imputer = Imputer()
+imputed_train_X_mvh = hmv_imputer.fit_transform(train_X_mvh)
+imputed_validation_X_mvh = hmv_imputer.transform(validation_X_mvh)
+print('Approach 2 - MAE with imputation: ')
+print(score_methods_for_missing_value_handling(imputed_train_X_mvh, imputed_validation_X_mvh,  train_y_mvh, validation_y_mvh))
+#Approach 3 - imputation with extension    
+extension_imputed_train_X_mvh = train_X_mvh.copy()
+extension_imputed_validation_X_mvh = validation_X_mvh.copy()
+for col in mvh_cols_missing_values:
+    extension_imputed_train_X_mvh[col + '_was_missing'] = extension_imputed_train_X_mvh[col].isnull()
+    extension_imputed_validation_X_mvh[col + '_was_missing'] = extension_imputed_validation_X_mvh[col].isnull()
+extension_imputed_train_X_mvh = hmv_imputer.fit_transform(extension_imputed_train_X_mvh)
+extension_imputed_validation_X_mvh = hmv_imputer.transform(extension_imputed_validation_X_mvh)
+print('Approach 3 - MAE with imputation and extension tracking what was imputed: ')
+print(score_methods_for_missing_value_handling(extension_imputed_train_X_mvh, extension_imputed_validation_X_mvh, train_y_mvh, validation_y_mvh))
+    
 #STEP 8 - RE-SPECIFY AND FIT THE MODEL WITH IMPROVEMENTS BASED ON VALIDATION EXERCISE#
 
 #Random forest has performed best on training data so will be used for the final model. 
