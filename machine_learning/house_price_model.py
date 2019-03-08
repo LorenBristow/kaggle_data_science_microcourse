@@ -4,7 +4,9 @@ Created on Wed Mar  6 13:26:55 2019
 
 @author: loren
 """
-
+###TO DO
+#clean out code that duplicates purpose of the variable explorer. 
+###END OF TO DO
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.tree import DecisionTreeRegressor
@@ -19,7 +21,7 @@ iowa_dataframe = pd.read_csv(iowa_data_file_path)
 #STEP 2 - INSPECT THE DATA#
 
 pd.set_option('display.max_columns', None) #setting to allow all columns to be seen in console for inspection. 
-print('IOWA data summary:\n\n', iowa_dataframe.describe(), '\n\n')
+print('IOWA data summary:\n\n', iowa_dataframe.describe(), '\n\n') #shows count, mean, std, min, max and quartiles by column. 
 
 #datatypes
 print('What are the datatypes by column?\n')
@@ -44,7 +46,7 @@ y = iowa_dataframe.SalePrice #defines the target.
 print('Prices of first 5 houses in Iowa dataset:\n', y.head(), '\n') #to see the first few rows of 'y' for inspection.
     
 #List the features by column name and then assign the features data to 'X'. Features are the inputs to the model. 
-iowa_features = ['LotArea', 'YearBuilt', '1stFlrSF', '2ndFlrSF', 'FullBath', 'BedroomAbvGr', 'TotRmsAbvGrd']
+iowa_features = ['LotArea', 'YearBuilt', '1stFlrSF', '2ndFlrSF', 'FullBath', 'BedroomAbvGr', 'TotRmsAbvGrd', 'OverallQual', 'OverallCond', ] #'YearRemodAdd' tended to increase MAE so excluded. 
 X = iowa_dataframe_missing_values_dropped[iowa_features]   
 print('Features of first 5 houses in the Iowa dataset:\n', X.head(), '\n') 
 
@@ -89,11 +91,11 @@ mae_for_comparison_list = []
 print('Initial testing of different numbers of leaf nodes results in the following:\n')
 for max_leaf_nodes in max_leaves_for_consideration:
     mae_for_comparison = specify_fit_predict_validate(max_leaf_nodes, train_X, validation_X, train_y, validation_y)
-    print('leaf nodes: {},    mae: {}'.format(max_leaf_nodes, round(mae_for_comparison),3), '\n')
+    print('leaf nodes: {},    mae: {}'.format(max_leaf_nodes, round(mae_for_comparison)), '\n')
     mae_for_comparison_list.append(mae_for_comparison)
     if mae_for_comparison == min(mae_for_comparison_list):
         optimal_max_leaf_nodes = max_leaf_nodes
-print('Therefore, optimal number of leaf nodes is {} resulting in a MAE of {}. This is a {}% improvement over the MAE without adjusting the number of leaf nodes.\n'.format(optimal_max_leaf_nodes, round(mae_for_comparison),round((1-mae_for_comparison/mae_decision_tree_default)*100)))  
+print('Therefore, optimal number of leaf nodes is {} resulting in a MAE of {}. This is a {}% improvement over the MAE without adjusting the number of leaf nodes.\n'.format(optimal_max_leaf_nodes, round(min(mae_for_comparison_list)),round((1-mae_for_comparison/mae_decision_tree_default)*100)))  
 
 #Can we find a more optimal number of leaf nodes around the currently identified optimal number of leaf nodes?
 range_bottom = int(optimal_max_leaf_nodes * 0.9)
@@ -118,11 +120,28 @@ predicted_house_prices_random_forest = iowa_house_price_model_random_forest.pred
 #validate
 mae_random_forest = mean_absolute_error(validation_y, predicted_house_prices_random_forest)   
 print('Using a random forest model the MAE is {}. This is a {}% improvement over the MAE with more refined number of leaf nodes.\n\n'.format(round(mae_random_forest), round((1-mae_random_forest/mae_for_comparison_from_refined_leaves_number)*100)))
- 
+
+#What is the optimal way to handle missing values? Compare dropping columns, imputation and imputation with extension. 
+#Return to original data (above has already gone the dropped columns route so we need to take a step back for testing other methods.)
+iowa_prediction_data = iowa_dataframe.drop(['SalePrice'], axis=1) #removes target from data.
+#Exclude non-numeric columns for now.
+iowa_prediction_data_only_numeric = iowa_prediction_data.select_dtypes(exclude=['object']) #removes non-numeric columns.
+#Respecify X_mvh
+X_mvh = iowa_prediction_data_only_numeric[iowa_features]
+#Split data into training and validation. 'mvh' stands for missing value handling. 
+train_X_mvh, validation_X_mvh, train_y_mvh, validation_y_mvh = train_test_split(X_mvh, y, random_state=1)
+#Define a function to compare the performance.
+def score_methods_for_missing_value_handling(train_X_mvh, validation_X_mvh, train_y_mvh, validation_y_mvh):
+    model = RandomForestRegressor(random_state=1)
+    model.fit(train_X_mvh, train_y_mvh)
+    preds = model.predict(validation_X_mvh)
+    return mean_absolute_error(y_test, validation_y_mvh)
+#Compare
+
 #STEP 8 - RE-SPECIFY AND FIT THE MODEL WITH IMPROVEMENTS BASED ON VALIDATION EXERCISE#
 
 #Random forest has performed best on training data so will be used for the final model. 
-final_house_price_model_on_full_data = RandomForestRegressor(random_state=1)
+final_house_price_model_on_full_data = iowa_house_price_model_random_forest
 #Fit on all data (not just training data) to improve accuracy.
 final_house_price_model_on_full_data.fit(X, y)
 
