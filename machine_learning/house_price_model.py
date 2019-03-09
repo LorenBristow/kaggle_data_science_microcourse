@@ -4,8 +4,7 @@ Created on Wed Mar  6 13:26:55 2019
 
 @author: loren
 """
-###TO DO
-#clean out code that duplicates purpose of the variable explorer. 
+
 ###END OF TO DO
 import pandas as pd
 from sklearn.model_selection import train_test_split
@@ -128,13 +127,18 @@ print('Approach 3 in main model')
 #Will a different model perform better? Trying a random forest model.
 #specify:
 iowa_house_price_model_random_forest = RandomForestRegressor(random_state=1) #random forest performs quite well without tuning of paramaters. 
+print('1')
 #fit
 iowa_house_price_model_random_forest.fit(train_X_imputed_ext, train_y)
+print('2')
 #predict
 predicted_house_prices_random_forest = iowa_house_price_model_random_forest.predict(validation_X_imputed_ext)
+print('3')
 #validate
-mae_random_forest = mean_absolute_error(validation_y, predicted_house_prices_random_forest)   
+mae_random_forest = mean_absolute_error(validation_y, predicted_house_prices_random_forest)  
+print('4') 
 print('Using a random forest model & imputation extension the MAE is {}.\n\n'.format(mae_random_forest))
+print('5')
 #________________________________________________
 ##What is the optimal way to handle missing values? Compare dropping columns, imputation and imputation with extension.
 ##Return to original data (above has already gone the dropped columns route so we need to take a step back for testing other methods.)
@@ -193,27 +197,67 @@ print('Using a random forest model & imputation extension the MAE is {}.\n\n'.fo
 #STEP 8 - RE-SPECIFY AND FIT THE MODEL WITH IMPROVEMENTS BASED ON VALIDATION EXERCISE#
 #++++++++++++++++++++++++++++++++++++++++++++++++
 #Random forest has performed best on training data so will be used for the final model. 
-final_house_price_model_on_full_data = RandomForestRegressor(random_state=1)
+
 #Fit on all data (not just training data) to improve accuracy.
-final_house_price_model_on_full_data.fit(X, y)
+
+                                        ####################HERE####################
+#merge dataframes of imputed data back into one dataset to fit the model on all training data
+#fit the model on the merged result and pass this in for submission
+#change features fed to prediction to the whole of X post imputation and merge. Do i need to remove nans here?
+#but first going to fit only on 
+
+ #fit on train of train, will replaced will whole train set in next iteration. 
 
 #STEP 9 - PREDICT ON NEW DATA#
 
 #Read in test data using pandas.
 test_data_path = 'input/test.csv'
+print('6')
 test_data = pd.read_csv(test_data_path)
-#define features that will be the input. 
-test_X = test_data[iowa_features]
+print(type(test_data))
+test_data_numeric_only = test_data.select_dtypes(exclude=['object'])
+
+print('7')
+print(type(test_data_numeric_only))
+#Impute ext missing values in test data - so we're doing same as in model training. 
+test_data_imputed_ext = test_data_numeric_only.copy()
+print('8')
+print(type(test_data_imputed_ext))
+for col in cols_missing_values:
+    test_data_imputed_ext[col + '_was_missing'] = test_data_imputed_ext[col].isnull()
+print('9')
+print(type(test_data_imputed_ext))
+train_X_imputed_ext = imputer.fit_transform(train_X_imputed_ext)
+train_X_imputed_ext = pd.DataFrame(train_X_imputed_ext) #df was becoming a numpy array here - problem. convert -> https://stackoverflow.com/questions/35723472/how-to-use-sklearn-fit-transform-with-pandas-and-return-dataframe-instead-of-num
+print(type(train_X_imputed_ext))
+print('10')
+test_data_imputed_ext = imputer.transform(test_data_imputed_ext)
+test_data_imputed_ext = pd.DataFrame(test_data_imputed_ext)
+print(type(test_data_imputed_ext))
+print('11')
+
+
+final_house_price_model_on_full_data = RandomForestRegressor(random_state=1)
+print('12')
+final_house_price_model_on_full_data.fit(train_X_imputed_ext, train_y)
+print('13')
+predicted_house_prices_random_forest = final_house_price_model_on_full_data.predict(test_data_imputed_ext)
+print('14')
+#test_X = test_data[iowa_features]
 #predict.
-test_predictions = final_house_price_model_on_full_data.predict(test_X)
+#test_predictions = final_house_price_model_on_full_data.predict(test_X)
+
+
 
 #________________________________________________________________________________________
 #FOR THE KAGGLE COMPETITION#
 # The lines below show how to save predictions in format used for competition scoring.
-output = pd.DataFrame({'Id': test_data.Id,
-                       'SalePrice': test_predictions})
+output = pd.DataFrame({'Id': test_data_imputed_ext.Id,
+                       'SalePrice': predicted_house_prices_random_forest})
 output.to_csv('submission.csv', index=False)
 
-
-
+#Original submission format:
+#output = pd.DataFrame({'Id': test_data.Id,
+#                       'SalePrice': test_predictions})
+#output.to_csv('submission.csv', index=False)
 
